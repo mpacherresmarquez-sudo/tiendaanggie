@@ -30,6 +30,9 @@ def init():
  CREATE TABLE IF NOT EXISTS funds(id INTEGER PRIMARY KEY,date TEXT,amount INTEGER,reference TEXT,user_id INTEGER);
  CREATE TABLE IF NOT EXISTS audit(id INTEGER PRIMARY KEY,date TEXT,user_id INTEGER,action TEXT,detail TEXT);
  ''')
+  columns={r['name'] for r in c.execute('PRAGMA table_info(services)')}
+  for column in ('payment_method','bank','payment_reference'):
+   if column not in columns: c.execute(f'ALTER TABLE services ADD COLUMN {column} TEXT')
   if not c.execute('SELECT 1 FROM products').fetchone():
    c.executemany('INSERT INTO products(name,category,presentation,price,cost,stock,minimum) VALUES(?,?,?,?,?,?,?)', [('Arroz extra','Granos','Saco 50 kg',18500,16200,18,5),('Azúcar rubia','Granos','Arroba 11.5 kg',4600,3900,4,5),('Aceite vegetal','Aceites','Galonera 5 L',3800,3150,12,4),('Huevos frescos','Abarrotes','Cubeta 30 unidades',1800,1450,3,5),('Harina de trigo','Harinas','Saco 25 kg',7800,6500,9,3),('Papel higiénico','Limpieza','Paquete 4 unidades',650,490,24,6)])
    c.executemany('INSERT INTO companies(name,type) VALUES(?,?)',[('Claro','RECARGA'),('Movistar','RECARGA'),('Entel','RECARGA'),('Bitel','RECARGA'),('Empresa de luz','LUZ'),('Empresa de agua','AGUA')])
@@ -102,20 +105,26 @@ def write(c,kind,d,u):
    if state=='CONFIRMADO':
     if not code or not d.get('external_confirmation'): raise ValueError('Se requiere código y confirmación externa del proveedor.')
     balance=c.execute('SELECT COALESCE(SUM(amount),0) FROM funds').fetchone()[0]
-    used=c.execute("SELECT COALESCE(SUM(amount),0) FROM services WHERE state='CONFIRMADO'").fetchone()[0]
-    if balance-used<s['amount']: raise ValueError('Saldo de plataforma insuficiente; registra una carga.')
+    used=c.execute("SELECT COALESCE(SUM(amount),0) FROM services WHERE state='CONFIRMADO' AND payment_method IS NULL").fetchone()[0]
+    if not s['payment_method'] and balance-used<s['amount']: raise ValueError('Saldo de plataforma insuficiente; registra una carga.')
    if state=='ANULADO' and (role!='admin' or not d.get('reason')): raise ValueError('Solo el administrador puede anular, con un motivo.')
    c.execute('UPDATE services SET state=?,code=?,reason=? WHERE id=?',(state,code or s['code'],d.get('reason',''),s['id']))
    # Anulación interna conserva el consumo; no equivale a reversión externa.
-   if s['state']=='CONFIRMADO' and state=='ANULADO': c.execute('INSERT INTO funds(date,amount,reference,user_id) VALUES(?,?,?,?)',(now(),-s['amount'],'Consumo retenido por anulación interna #'+str(s['id']),uid))
+   if not s['payment_method'] and s['state']=='CONFIRMADO' and state=='ANULADO': c.execute('INSERT INTO funds(date,amount,reference,user_id) VALUES(?,?,?,?)',(now(),-s['amount'],'Consumo retenido por anulación interna #'+str(s['id']),uid))
   else:
+   method=d.get('payment_method')
+   if method not in ('Yape','Transferencia bancaria'): raise ValueError('Selecciona Yape o transferencia bancaria.')
+   bank=d.get('bank','').strip() if method=='Transferencia bancaria' else ''
+   if method=='Transferencia bancaria' and not bank: raise ValueError('Indica el banco de la transferencia.')
+   reference=d.get('payment_reference','').strip()
+   if not reference: raise ValueError('Indica la referencia del pago realizado.')
    company=c.execute('SELECT * FROM companies WHERE id=?',(d['company_id'],)).fetchone()
    dest=d.get('destination','').strip()
    if not company or not dest or dest!=d.get('confirmation'): raise ValueError('La referencia y su confirmación deben coincidir.')
    if company['type']=='RECARGA' and (len(dest)!=9 or not dest.isdigit()): raise ValueError('El celular debe tener 9 dígitos.')
    amount=money(d['amount'])
    if not amount: raise ValueError('El importe debe ser positivo.')
-   c.execute('INSERT INTO services(date,user_id,company_id,destination,period,amount,charge,commission) VALUES(?,?,?,?,?,?,?,?)',(now(),uid,company['id'],dest,d.get('period',''),amount,money(d.get('charge',0)),money(d.get('commission',0))))
+   c.execute('INSERT INTO services(date,user_id,company_id,destination,period,amount,charge,commission,payment_method,bank,payment_reference) VALUES(?,?,?,?,?,?,?,?,?,?,?)',(now(),uid,company['id'],dest,d.get('period',''),amount,money(d.get('charge',0)),money(d.get('commission',0)),method,bank,reference))
  elif kind=='funds':
   amount=money(d['amount'])
   if not amount or not d.get('reference'): raise ValueError('Indica monto positivo y referencia de la carga.')
@@ -160,7 +169,7 @@ class Handler(BaseHTTPRequestHandler):
   name='index.html' if self.path=='/' else self.path.lstrip('/').split('?')[0]
   p=(ROOT/'static'/name).resolve()
   if not p.is_relative_to((ROOT/'static').resolve()) or not p.is_file(): return self.respond(404,{'error':'No encontrado.'})
-  self.send_response(200); self.send_header('Content-Type',{'html':'text/html; charset=utf-8','css':'text/css','js':'application/javascript'}.get(p.suffix[1:],'text/plain')); self.send_header('X-Content-Type-Options','nosniff'); self.end_headers(); self.wfile.write(p.read_bytes())
+  self.send_response(200); self.send_header('Content-Type',{'html':'text/html; charset=utf-8','css':'text/css','js':'application/javascript','svg':'image/svg+xml'}.get(p.suffix[1:],'text/plain')); self.send_header('X-Content-Type-Options','nosniff'); self.end_headers(); self.wfile.write(p.read_bytes())
  def do_POST(self):
   if self.headers.get('X-Anggie')!='1': return self.respond(403,{'error':'Solicitud no autorizada.'})
   try:
