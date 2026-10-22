@@ -1,4 +1,4 @@
-# Tienda Anggie
+# La Tienda de Don Pepe
 
 Aplicación web en español basada en el documento de gestión de abarrotes y servicios. Python 3.12+, SQLite y JavaScript; no necesita paquetes externos.
 

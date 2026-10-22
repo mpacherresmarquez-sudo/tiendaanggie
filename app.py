@@ -199,4 +199,4 @@ class Handler(BaseHTTPRequestHandler):
   except (ValueError,KeyError,TypeError,sqlite3.IntegrityError) as e: self.respond(400,{'error':'Datos inválidos o referencia duplicada.' if isinstance(e,sqlite3.IntegrityError) else str(e)})
   except Exception: self.respond(500,{'error':'No se pudo guardar la operación.'})
 if __name__=='__main__':
- init(); print('Tienda Anggie: servidor iniciado',flush=True); ThreadingHTTPServer((os.environ.get('HOST','127.0.0.1'),int(os.environ.get('PORT','8000'))),Handler).serve_forever()
+ init(); print('La Tienda de Don Pepe: servidor iniciado',flush=True); ThreadingHTTPServer((os.environ.get('HOST','127.0.0.1'),int(os.environ.get('PORT','8000'))),Handler).serve_forever()
