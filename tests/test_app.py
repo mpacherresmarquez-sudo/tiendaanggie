@@ -41,6 +41,16 @@ class BusinessTests(unittest.TestCase):
   saved=self.c.execute('SELECT * FROM services').fetchone()
   self.assertEqual(saved['bank'],'BCP');self.assertEqual(saved['payment_method'],'Transferencia bancaria')
   self.assertEqual(saved['state'],'CONFIRMADO')
+ def test_recharge_optional_reference_no_period_single_commission(self):
+  self.save('services',{'company_id':1,'destination':'987654321','confirmation':'987654321','amount':'10','charge':'2','commission':'99','period':'2026-10','payment_method':'Yape'})
+  row=self.c.execute('SELECT * FROM services').fetchone()
+  self.assertEqual(row['payment_reference'],'');self.assertEqual(row['period'],'')
+  self.assertEqual(row['charge'],200);self.assertEqual(row['commission'],0)
+  self.assertEqual(row['amount']+row['charge'],1200)
+ def test_electricity_period_and_supply(self):
+  self.save('services',{'company_id':5,'destination':'SUM-001','confirmation':'SUM-001','amount':'65','charge':'3','period':'2026-10','payment_method':'Transferencia bancaria','bank':'BCP'})
+  row=self.c.execute('SELECT * FROM services').fetchone()
+  self.assertEqual(row['period'],'2026-10');self.assertEqual(row['destination'],'SUM-001')
  def test_migration_is_repeatable(self):
   self.c.commit();app.init();app.init()
   self.assertIn('payment_method',[r['name'] for r in self.c.execute('PRAGMA table_info(services)')])

@@ -117,14 +117,13 @@ def write(c,kind,d,u):
    bank=d.get('bank','').strip() if method=='Transferencia bancaria' else ''
    if method=='Transferencia bancaria' and not bank: raise ValueError('Indica el banco de la transferencia.')
    reference=d.get('payment_reference','').strip()
-   if not reference: raise ValueError('Indica la referencia del pago realizado.')
    company=c.execute('SELECT * FROM companies WHERE id=?',(d['company_id'],)).fetchone()
    dest=d.get('destination','').strip()
    if not company or not dest or dest!=d.get('confirmation'): raise ValueError('La referencia y su confirmación deben coincidir.')
    if company['type']=='RECARGA' and (len(dest)!=9 or not dest.isdigit()): raise ValueError('El celular debe tener 9 dígitos.')
    amount=money(d['amount'])
    if not amount: raise ValueError('El importe debe ser positivo.')
-   c.execute('INSERT INTO services(date,user_id,company_id,destination,period,amount,charge,commission,payment_method,bank,payment_reference) VALUES(?,?,?,?,?,?,?,?,?,?,?)',(now(),uid,company['id'],dest,d.get('period',''),amount,money(d.get('charge',0)),money(d.get('commission',0)),method,bank,reference))
+   c.execute('INSERT INTO services(date,user_id,company_id,destination,period,amount,charge,commission,payment_method,bank,payment_reference) VALUES(?,?,?,?,?,?,?,?,?,?,?)',(now(),uid,company['id'],dest,'' if company['type']=='RECARGA' else d.get('period',''),amount,money(d.get('charge',0)),0,method,bank,reference))
  elif kind=='funds':
   amount=money(d['amount'])
   if not amount or not d.get('reference'): raise ValueError('Indica monto positivo y referencia de la carga.')
