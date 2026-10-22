@@ -5,6 +5,7 @@ class HttpTests(unittest.TestCase):
  def test_login_permissions_and_sale(self):
   with tempfile.TemporaryDirectory() as t:
    old=app.DB;app.DB=t+'/http.db';app.init()
+   with app.connect() as c: c.execute('UPDATE products SET stock=18 WHERE id=1')
    server=app.ThreadingHTTPServer(('127.0.0.1',0),app.Handler)
    thread=threading.Thread(target=server.serve_forever,daemon=True);thread.start()
    client=urllib.request.build_opener(urllib.request.HTTPCookieProcessor(http.cookiejar.CookieJar()))

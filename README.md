@@ -11,7 +11,7 @@ python3 app.py
 
 Puerto predeterminado 8000, escucha local. `HOST`, `PORT` y `ANGGIE_DB` permiten cambiar host, puerto y ubicación de SQLite. Para un servidor accesible desde otra máquina, configurar `HOST=0.0.0.0` únicamente detrás de un proxy HTTPS y con acceso controlado.
 
-En el primer ingreso se crea la cuenta de administrador (contraseña mínima de 10 caracteres). No hay credenciales predeterminadas. Incluye seis productos de ejemplo con existencias; los datos de muestra no representan inventario real. La base se guarda en `data/anggie.db`, excluida de Git.
+En el primer ingreso se crea la cuenta de administrador (contraseña mínima de 10 caracteres). No hay credenciales predeterminadas. Incluye los 100 productos/presentaciones indicados por el dueño en `catalog/productos.csv`, con precios en soles y stock, costo y mínimo iniciales en cero. Registra compras y configura mínimos antes de vender. El catálogo reemplaza al anterior una sola vez al arrancar; conserva como archivados los productos con historial y elimina los demás. No modifica precios o existencias en arranques posteriores. La base se guarda en `data/anggie.db`, excluida de Git.
 
 ## Funciones implementadas
 

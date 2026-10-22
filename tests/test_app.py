@@ -4,6 +4,8 @@ import app
 class BusinessTests(unittest.TestCase):
  def setUp(self):
   self.tmp=tempfile.TemporaryDirectory(); app.DB=self.tmp.name+'/test.db'; app.init(); self.c=app.connect(); self.u={'id':1,'role':'admin'}
+  self.c.execute('DELETE FROM products')
+  self.c.execute("INSERT INTO products(id,name,price,cost,stock,minimum) VALUES(1,'Producto de prueba',18500,16200,18,5)")
   self.c.execute("INSERT INTO customers(name) VALUES('Ana')")
   self.c.execute("INSERT INTO suppliers(name) VALUES('Mayorista')");self.c.commit()
  def tearDown(self):self.c.close();self.tmp.cleanup()

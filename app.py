@@ -33,8 +33,9 @@ def init():
   columns={r['name'] for r in c.execute('PRAGMA table_info(services)')}
   for column in ('payment_method','bank','payment_reference'):
    if column not in columns: c.execute(f'ALTER TABLE services ADD COLUMN {column} TEXT')
-  if not c.execute('SELECT 1 FROM products').fetchone():
-   c.executemany('INSERT INTO products(name,category,presentation,price,cost,stock,minimum) VALUES(?,?,?,?,?,?,?)', [('Arroz extra','Granos','Saco 50 kg',18500,16200,18,5),('Azúcar rubia','Granos','Arroba 11.5 kg',4600,3900,4,5),('Aceite vegetal','Aceites','Galonera 5 L',3800,3150,12,4),('Huevos frescos','Abarrotes','Cubeta 30 unidades',1800,1450,3,5),('Harina de trigo','Harinas','Saco 25 kg',7800,6500,9,3),('Papel higiénico','Limpieza','Paquete 4 unidades',650,490,24,6)])
+  from catalog import load_catalog
+  load_catalog(c)
+  if not c.execute('SELECT 1 FROM companies').fetchone():
    c.executemany('INSERT INTO companies(name,type) VALUES(?,?)',[('Claro','RECARGA'),('Movistar','RECARGA'),('Entel','RECARGA'),('Bitel','RECARGA'),('Empresa de luz','LUZ'),('Empresa de agua','AGUA')])
 def now(): return datetime.datetime.now(datetime.timezone.utc).isoformat()
 def money(v):
@@ -72,7 +73,7 @@ def write(c,kind,d,u):
   if kind=='purchases' and not d.get('supplier_id'): raise ValueError('Selecciona un proveedor.')
   total=0; cost=0; details=[]; counts={}
   for line in lines:
-   p=c.execute('SELECT * FROM products WHERE id=?',(int(line['product_id']),)).fetchone()
+   p=c.execute('SELECT * FROM products WHERE id=? AND archived=0',(int(line['product_id']),)).fetchone()
    if not p: raise ValueError('Producto no encontrado.')
    q=positive(line['quantity']); counts[p['id']]=counts.get(p['id'],0)+q
    if kind=='sales' and counts[p['id']]>p['stock']: raise ValueError('Stock insuficiente: '+p['name'])
@@ -161,7 +162,7 @@ class Handler(BaseHTTPRequestHandler):
      if role in ('admin','compras'): tables|={'suppliers','purchases','movements'}
      if role in ('admin','servicios'): tables|={'services','funds'}
      if role=='admin': tables|={'audit'}
-     result={t:[dict(r) for r in c.execute('SELECT * FROM '+t)] for t in tables}
+     result={t:[dict(r) for r in c.execute('SELECT * FROM '+t+(' WHERE archived=0' if t=='products' else ''))] for t in tables}
      if role=='admin': result['users']=[dict(r) for r in c.execute('SELECT id,name,username,role,active FROM users')]
      return self.respond(200,result)
     return self.respond(404,{'error':'Ruta inexistente.'})

@@ -1,0 +1,101 @@
+nombre,presentacion,precio,categoria
+Arroz,1 kg,4.00,Granos y harinas
+Azúcar,1 kg,4.50,Granos y harinas
+Huevo,Unidad,0.70,Lácteos y huevos
+Leche Gloria,Grande,4.50,Lácteos y huevos
+Leche Gloria,Chica,2.50,Lácteos y huevos
+Leche Bonlé,Grande,3.80,Lácteos y huevos
+Yogurt,Chico,2.50,Lácteos y huevos
+Yogurt,Medio,4.50,Lácteos y huevos
+Filete,Unidad,4.00,Conservas
+Grated,Unidad,3.50,Conservas
+Aceite,1 litro,8.50,Aceites y salsas
+Zuko,Unidad,1.50,Bebidas
+Polvo de hornear,Unidad,1.50,Repostería
+Harina,1 kg,5.00,Granos y harinas
+Colapiz,Unidad,2.50,Repostería
+Mostaza,Unidad,2.50,Aceites y salsas
+Mayonesa,Mediana,3.50,Aceites y salsas
+Mayonesa,Chica,0.50,Aceites y salsas
+Tari,Chico,0.50,Aceites y salsas
+Pomarola,Unidad,3.00,Aceites y salsas
+Leche condensada,Unidad,5.00,Repostería
+Manjar blanco,Unidad,4.50,Repostería
+Gelatina,Unidad,3.80,Repostería
+Flan,Unidad,2.50,Repostería
+Fósforo,Unidad,0.30,Hogar
+Tallarín Marco Polo,Unidad,3.00,Fideos y avenas
+Tallarín Lavaggi,Unidad,3.50,Fideos y avenas
+Cabello de ángel Marco Polo,Unidad,1.50,Fideos y avenas
+Fideo Marco Polo,Unidad,1.30,Fideos y avenas
+Fideo Molitalia,Unidad,1.70,Fideos y avenas
+Avena 3 Ositos,Unidad,2.00,Fideos y avenas
+Avena clásica,Unidad,1.20,Fideos y avenas
+Mantequilla Manty,Unidad,2.70,Lácteos y huevos
+Té,Sobre individual,0.10,Infusiones
+Anís,Sobre individual,0.10,Infusiones
+Manzanilla,Sobre individual,0.10,Infusiones
+Boldo,Sobre individual,0.10,Infusiones
+Anís,Caja,2.00,Infusiones
+Manzanilla,Caja,2.00,Infusiones
+Té,Caja,2.00,Infusiones
+Pimienta,Unidad,1.50,Condimentos
+Comino,Unidad,0.80,Condimentos
+Sibarita,Unidad,1.50,Condimentos
+Tuco,Unidad,1.50,Condimentos
+Ajinomoto,Unidad,1.50,Condimentos
+Ajinomen,Unidad,2.00,Fideos y avenas
+Don Café,Unidad,2.00,Bebidas
+Altomayo,Unidad,3.00,Bebidas
+Milo,Unidad,1.50,Bebidas
+Mermelada,Unidad,1.80,Repostería
+Chocolate de taza,Unidad,2.00,Bebidas
+Cancha,1 kg,9.00,Granos y harinas
+Crema de alberja,1 kg,8.00,Granos y harinas
+Alberja partida,1 kg,8.50,Granos y harinas
+Punki,1 kg,7.80,Granos y harinas
+Chufla,1 kg,8.00,Granos y harinas
+Papel Paracas azul,2 rollos,2.50,Papeles
+Papel Paracas lila,2 rollos,2.00,Papeles
+Papel Paracas azul,4 rollos,5.00,Papeles
+Papel Paracas negro,4 rollos,8.00,Papeles
+Papel Noble,2 rollos,2.00,Papeles
+Papel toalla Paracas negro,Unidad,2.70,Papeles
+Sal de Andrews,Unidad,1.00,Cuidado personal
+Curita,Unidad,0.20,Cuidado personal
+Repelente,Unidad,2.00,Cuidado personal
+Mentholatum,Unidad,2.00,Cuidado personal
+Paño amarillo,Unidad,1.50,Limpieza
+Scotch-Brite,Unidad,2.00,Limpieza
+Toalla higiénica Ladysoft noche,Paquete,8.50,Cuidado personal
+Toalla higiénica Ladysoft día,Paquete,3.80,Cuidado personal
+Toalla higiénica Nosotras día,Paquete,5.50,Cuidado personal
+Toalla higiénica Nosotras noche,Paquete,10.00,Cuidado personal
+Rexona,Sachet,1.50,Cuidado personal
+Head & Shoulders,Unidad,1.50,Cuidado personal
+Sedal,Unidad,1.50,Cuidado personal
+Nutribela,Unidad,2.00,Cuidado personal
+Prestobarba,3 hojas,3.50,Cuidado personal
+Prestobarba,2 hojas,1.50,Cuidado personal
+Super Glue,Unidad,1.00,Hogar
+Alcohol,Unidad,2.00,Cuidado personal
+Pila,AA,2.00,Hogar
+Pila,AAA,2.00,Hogar
+Pila,Grande,4.50,Hogar
+Colgate,Unidad,4.50,Cuidado personal
+Kolynos,Unidad,4.00,Cuidado personal
+Suavitel,Unidad,1.50,Limpieza
+Bolívar,Unidad,3.50,Limpieza
+Popeye,Unidad,2.50,Limpieza
+Patito,Unidad,1.50,Limpieza
+Marsella,Unidad,3.80,Limpieza
+Opal,Unidad,4.80,Limpieza
+Protex,Unidad,4.50,Cuidado personal
+Palmolive,Unidad,3.00,Cuidado personal
+Johnson,Unidad,5.00,Cuidado personal
+Heno de Pravia,Unidad,5.50,Cuidado personal
+Jabón líquido,Unidad,6.00,Cuidado personal
+Cepillo,Unidad,3.00,Cuidado personal
+Hisopos,Unidad,1.50,Cuidado personal
+Amigo,Unidad,2.00,Limpieza
+Pollon,Unidad,2.00,Limpieza
