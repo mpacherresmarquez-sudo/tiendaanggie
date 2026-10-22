@@ -1,0 +1,49 @@
+# Tienda Anggie
+
+Aplicación web en español basada en el documento de gestión de abarrotes y servicios. Python 3.12+, SQLite y JavaScript; no necesita paquetes externos.
+
+## Ejecutar
+
+```sh
+cd /workspace/tiendaanggie
+python3 app.py
+```
+
+Puerto predeterminado 8000, escucha local. `HOST`, `PORT` y `ANGGIE_DB` permiten cambiar host, puerto y ubicación de SQLite. Para un servidor accesible desde otra máquina, configurar `HOST=0.0.0.0` únicamente detrás de un proxy HTTPS y con acceso controlado.
+
+En el primer ingreso se crea la cuenta de administrador (contraseña mínima de 10 caracteres). No hay credenciales predeterminadas. Incluye seis productos de ejemplo con existencias; los datos de muestra no representan inventario real. La base se guarda en `data/anggie.db`, excluida de Git.
+
+## Funciones implementadas
+
+- Autenticación con hash scrypt, sesiones de ocho horas y permisos verificados en el servidor. Roles administrador, ventas, compras y servicios. Creación y desactivación de usuarios.
+- Catálogo por producto/presentación, precios, costo promedio, mínimo y alertas de stock. Edición del catálogo.
+- Compras al contado con proveedor y ventas con múltiples productos. Actualización transaccional de inventario, validación de existencias y movimientos.
+- Clientes, proveedores, ventas fiadas, historial y abonos que no pueden superar el saldo.
+- Empresas/operadores, recargas y recibos pendientes; confirmación manual externa, referencias únicas por empresa, fallidos y anulación administrativa con motivo.
+- Control de saldo de una plataforma prepagada, cargas y consumo solo al confirmar. Una anulación interna retiene el consumo y no simula una devolución del proveedor.
+- Resumen y reportes exclusivos de administrador: filtros por fecha, ventas, compras, margen bruto histórico y comisiones separadas. Exportación de resumen CSV y constancias internas imprimibles con destino de servicio enmascarado.
+
+Los servicios se registran; **no se ejecutan recargas ni pagos reales**. Las empresas de agua/luz son ejemplos configurables. El catálogo maneja cada presentación como una existencia independiente; no convierte automáticamente sacos a arrobas o unidades base.
+
+## Verificar
+
+```sh
+python3 -m unittest discover -s tests -v
+node --check static/app.js
+```
+
+Las pruebas usan bases temporales: compra/venta, stock, fiados, abonos, confirmación y anulación de servicios, contraseñas, acceso y permisos HTTP. No se ejecutó validación visual automatizada en navegador.
+
+## Respaldo
+
+```sh
+python3 backup.py
+```
+
+Genera una copia consistente, incluso con la aplicación activa. Programar este comando diariamente con el planificador del servidor y copiar los respaldos a un almacenamiento seguro separado. `ANGGIE_BACKUPS` cambia el destino. Para restaurar: detener la aplicación, conservar una copia de la base actual, sustituirla por un respaldo y arrancar de nuevo. La programación y el almacenamiento remoto no están configurados.
+
+## Alcance pendiente antes de uso comercial
+
+Esta es una primera versión funcional, no la implementación completa de los 38 requisitos. Faltan recuperación de acceso, conversiones entre presentaciones, integración API con proveedor, múltiples cuentas de plataforma, reversiones externas y devoluciones conciliadas, correcciones/anulación de ventas, edición de clientes/proveedores, comprobantes tributarios, reportes detallados adicionales y respaldo periódico automatizado. Las constancias de venta actuales muestran el resumen, sin detalle de artículos.
+
+Antes de exponerla a Internet: desplegar con servidor/proxy de producción y HTTPS, cookies Secure, limitación de intentos de login, gestión persistente de sesiones y recuperación segura de cuentas, revisar seguridad y configurar copias externas. Las sesiones actuales se pierden al reiniciar. No se ha publicado ni desplegado el sistema.
