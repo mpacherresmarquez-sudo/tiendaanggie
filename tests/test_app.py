@@ -24,6 +24,27 @@ class BusinessTests(unittest.TestCase):
  def test_purchase_updates_stock(self):
   self.save('purchases',{'supplier_id':1,'items':[{'product_id':1,'quantity':2,'price':'160.00'}]})
   self.assertEqual(self.c.execute('SELECT stock FROM products WHERE id=1').fetchone()[0],20)
+ def test_buy_sacks_sell_kilos(self):
+  self.c.execute('UPDATE products SET stock=0,cost=0,price=400 WHERE id=1');self.c.commit()
+  self.save('purchases',{'supplier_id':1,'items':[{'product_id':1,'quantity':2,'price':'150','purchase_unit':'Saco','conversion_factor':50}]})
+  p=self.c.execute('SELECT * FROM products WHERE id=1').fetchone()
+  self.assertEqual(p['stock'],100);self.assertEqual(p['cost'],300)
+  self.assertEqual(self.c.execute('SELECT total FROM purchases').fetchone()[0],30000)
+  line=self.c.execute('SELECT * FROM items').fetchone()
+  self.assertEqual(line['purchase_quantity'],2);self.assertEqual(line['conversion_factor'],50)
+  self.assertEqual(line['purchase_price'],15000);self.assertEqual(line['purchase_unit'],'Saco')
+  self.save('sales',{'mode':'Contado','items':[{'product_id':1,'quantity':2.5}]})
+  self.assertEqual(self.c.execute('SELECT stock FROM products WHERE id=1').fetchone()[0],97.5)
+  sale=self.c.execute('SELECT * FROM sales').fetchone()
+  self.assertEqual(sale['total'],1000);self.assertEqual(sale['cost'],750)
+ def test_bulk_weighted_cost_and_invalid_factor(self):
+  self.c.execute('UPDATE products SET stock=10,cost=200 WHERE id=1');self.c.commit()
+  self.save('purchases',{'supplier_id':1,'items':[{'product_id':1,'quantity':1,'price':'40','purchase_unit':'Saco','conversion_factor':10},{'product_id':1,'quantity':1,'price':'60','purchase_unit':'Saco','conversion_factor':10}]})
+  p=self.c.execute('SELECT * FROM products WHERE id=1').fetchone()
+  self.assertEqual(p['stock'],30);self.assertEqual(p['cost'],400)
+  for factor in (0,-5,'nan','inf'):
+   with self.assertRaises(ValueError):self.save('purchases',{'supplier_id':1,'items':[{'product_id':1,'quantity':1,'price':'100','conversion_factor':factor}]})
+  self.assertEqual(self.c.execute('SELECT COUNT(*) FROM purchases').fetchone()[0],1)
  def test_permissions(self):
   with self.assertRaises(PermissionError):self.save('users',{}, {'id':2,'role':'ventas'})
  def test_service_confirmation_and_cancellation_retains_consumption(self):

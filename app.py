@@ -33,6 +33,9 @@ def init():
   columns={r['name'] for r in c.execute('PRAGMA table_info(services)')}
   for column in ('payment_method','bank','payment_reference'):
    if column not in columns: c.execute(f'ALTER TABLE services ADD COLUMN {column} TEXT')
+  item_columns={r['name'] for r in c.execute('PRAGMA table_info(items)')}
+  for column,definition in [('purchase_unit',"TEXT DEFAULT ''"),('purchase_quantity','REAL'),('conversion_factor','REAL DEFAULT 1'),('purchase_price','INTEGER')]:
+   if column not in item_columns: c.execute(f'ALTER TABLE items ADD COLUMN {column} {definition}')
   from catalog import load_catalog
   load_catalog(c)
   if not c.execute('SELECT 1 FROM companies').fetchone():
@@ -75,21 +78,25 @@ def write(c,kind,d,u):
   for line in lines:
    p=c.execute('SELECT * FROM products WHERE id=? AND archived=0',(int(line['product_id']),)).fetchone()
    if not p: raise ValueError('Producto no encontrado.')
-   q=positive(line['quantity']); counts[p['id']]=counts.get(p['id'],0)+q
+   entered=positive(line['quantity']); factor=positive(line.get('conversion_factor',1)) if kind=='purchases' else 1
+   q=entered*factor
+   if not __import__('math').isfinite(q): raise ValueError('Cantidad convertida inválida.')
+   counts[p['id']]=counts.get(p['id'],0)+q
    if kind=='sales' and counts[p['id']]>p['stock']: raise ValueError('Stock insuficiente: '+p['name'])
    price=p['price'] if kind=='sales' else money(line['price'])
-   total+=round(q*price); cost+=round(q*p['cost']); details.append((p,q,price))
+   line_total=round((entered if kind=='purchases' else q)*price)
+   total+=line_total; cost+=round(q*p['cost']); details.append((p,q,price,entered,factor,line_total,line.get('purchase_unit','Unidad de venta')))
   if kind=='sales': cur=c.execute('INSERT INTO sales(date,user_id,customer_id,mode,total,cost) VALUES(?,?,?,?,?,?)',(now(),uid,d.get('customer_id') or None,d['mode'],total,cost))
   else: cur=c.execute('INSERT INTO purchases(date,user_id,supplier_id,total) VALUES(?,?,?,?)',(now(),uid,int(d['supplier_id']),total))
   doc=cur.lastrowid
-  for p,q,price in details:
+  for p,q,price,entered,factor,line_total,purchase_unit in details:
    delta=-q if kind=='sales' else q
    if kind=='purchases':
     current=c.execute('SELECT stock,cost FROM products WHERE id=?',(p['id'],)).fetchone()
-    avg=round((current['stock']*current['cost']+q*price)/(current['stock']+q))
+    avg=round((current['stock']*current['cost']+line_total)/(current['stock']+q))
     c.execute('UPDATE products SET cost=? WHERE id=?',(avg,p['id']))
    c.execute('UPDATE products SET stock=stock+? WHERE id=?',(delta,p['id']))
-   c.execute('INSERT INTO items(kind,document_id,product_id,quantity,price,cost) VALUES(?,?,?,?,?,?)',(kind,doc,p['id'],q,price,p['cost']))
+   c.execute('INSERT INTO items(kind,document_id,product_id,quantity,price,cost,purchase_unit,purchase_quantity,conversion_factor,purchase_price) VALUES(?,?,?,?,?,?,?,?,?,?)',(kind,doc,p['id'],q,round(price/factor) if kind=='purchases' else price,p['cost'],purchase_unit if kind=='purchases' else '',entered if kind=='purchases' else None,factor,price if kind=='purchases' else None))
    c.execute('INSERT INTO movements(date,product_id,quantity,reference,user_id) VALUES(?,?,?,?,?)',(now(),p['id'],delta,f'{kind} #{doc}',uid))
  elif kind=='payments':
   s=c.execute("SELECT total-COALESCE((SELECT SUM(amount) FROM payments WHERE sale_id=sales.id),0) balance FROM sales WHERE id=? AND mode='Fiado'",(d['sale_id'],)).fetchone()
